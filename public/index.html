@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Dinner Match">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>Dinner Match</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- NAVIGATION -->
+  <nav id="main-nav">
+    <div class="nav-logo">Dinner<span>Match</span></div>
+    <div class="nav-links">
+      <a href="#swipe">Swipe</a>
+      <a href="#meals">Meals</a>
+      <a href="#family">Family</a>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR TOGGLE (mobile) -->
+  <button class="sidebar-toggle" onclick="toggleSidebar()">👨‍👩‍👧‍👦</button>
+
+  <!-- FAMILY SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>🏆 Family League</h2>
+      <p>Swipe scores this week</p>
+    </div>
+    <div class="league-table" id="league-table">
+      <!-- Rendered by JS -->
+    </div>
+    <div style="text-align:center;padding:20px;border-top:1px solid rgba(255,255,255,0.1);">
+      <button class="btn btn-primary" style="width:100%;padding:14px;" onclick="scrollToSection('family')">
+        Manage Family
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="hero-content">
+        <h1>What's For<br><span>Dinner?</span></h1>
+        <p>Swipe together. Decide faster. The family meal app that makes choosing dinner a joy.</p>
+        <button class="hero-btn" onclick="scrollToSection('swipe')">
+          Start Swiping →
+        </button>
+      </div>
+      <div class="scroll-indicator">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- SWIPE SECTION -->
+    <section id="swipe" class="swipe-section">
+      <h2 class="section-title fade-in">Swipe To <span>Decide</span></h2>
+      <p class="fade-in" style="color: var(--gray-light); text-align: center; margin-bottom: 40px; font-size: 1.1rem;">
+        Who's eating tonight?
+        <span id="swipe-family-inline"></span>
+      </p>
+
+      <div class="swipe-container">
+        <div id="swipe-stack"></div>
+      </div>
+
+      <div class="swipe-buttons" id="swipe-btns">
+        <button class="swipe-btn nope" onclick="swipeLeft()">✕</button>
+        <button class="swipe-btn like" onclick="swipeRight()">❤️</button>
+      </div>
+
+      <div id="swipe-empty" style="display:none; text-align:center; padding: 60px;">
+        <h3 style="font-size: 2rem; margin-bottom: 16px;">All Done! 🎉</h3>
+        <p style="color: var(--gray-light); margin-bottom: 24px;">You've seen all the meals</p>
+        <button class="btn btn-primary" onclick="resetSwipe()">Start Over</button>
+      </div>
+    </section>
+
+    <!-- MEALS SECTION -->
+    <section id="meals">
+      <h2 class="section-title fade-in">Our <span>Meals</span></h2>
+
+      <div style="display: flex; gap: 16px; margin-bottom: 40px;" class="fade-in">
+        <input type="text" id="meal-search" placeholder="Search meals..." onkeyup="searchMeals()" style="flex: 1;">
+        <select id="cat-filter" onchange="searchMeals()">
+          <option value="">All Categories</option>
+          <option value="Quick & Easy">Quick & Easy</option>
+          <option value="Comfort Food">Comfort Food</option>
+          <option value="Healthy">Healthy</option>
+          <option value="Weekend Special">Weekend</option>
+          <option value="Kid Friendly">Kid Friendly</option>
+          <option value="Vegetarian">Vegetarian</option>
+        </select>
+      </div>
+
+      <div class="meal-grid fade-in" id="meals-grid"></div>
+
+      <div style="margin-top: 80px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 60px;" class="fade-in">
+        <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 32px;">Add New Meal</h3>
+        <form onsubmit="addMeal(event)" style="max-width: 600px;">
+          <div class="form-group">
+            <label>Meal Name</label>
+            <input type="text" name="name" placeholder="What are we cooking?" required>
+          </div>
+          <div class="form-group">
+            <label>Ingredients</label>
+            <textarea name="ingredients" rows="4" placeholder="One ingredient per line..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>Instructions</label>
+            <textarea name="instructions" rows="4" placeholder="Step by step..."></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label>Category</label>
+              <select name="category">
+                <option>Quick & Easy</option>
+                <option>Comfort Food</option>
+                <option>Healthy</option>
+                <option>Weekend Special</option>
+                <option>Kid Friendly</option>
+                <option>Vegetarian</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Prep Time</label>
+              <input type="text" name="prep_time" placeholder="15 mins">
+            </div>
+            <div class="form-group">
+              <label>Cook Time</label>
+              <input type="text" name="cook_time" placeholder="30 mins">
+            </div>
+            <div class="form-group">
+              <label>Servings</label>
+              <input type="text" name="servings" placeholder="4">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Add Meal</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FAMILY SECTION -->
+    <section id="family">
+      <h2 class="section-title fade-in">Your <span>Family</span></h2>
+
+      <div class="family-grid fade-in" id="family-list"></div>
+
+      <div style="margin-top: 60px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 60px;" class="fade-in">
+        <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 32px;">Add Family Member</h3>
+        <form onsubmit="addFamily(event)" style="max-width: 500px;">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" name="name" placeholder="Who's this?" required>
+          </div>
+          <div class="form-group">
+            <label>Loves</label>
+            <input type="text" name="likes" placeholder="chicken, pasta, curry...">
+          </div>
+          <div class="form-group">
+            <label>Dislikes</label>
+            <input type="text" name="dislikes" placeholder="fish, spicy...">
+          </div>
+          <div class="form-group">
+            <label>Dietary</label>
+            <input type="text" name="dietary" placeholder="Vegetarian, Gluten-free...">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Add Member</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section style="text-align: center; background: linear-gradient(180deg, transparent, rgba(239,68,68,0.1));">
+      <div class="fade-in" style="display: flex; justify-content: center; gap: 80px; flex-wrap: wrap;">
+        <div>
+          <div id="stat-meals" style="font-size: 5rem; font-weight: 900; color: var(--red);">0</div>
+          <div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gray);">Meals</div>
+        </div>
+        <div>
+          <div id="stat-family" style="font-size: 5rem; font-weight: 900; color: var(--red);">0</div>
+          <div style="font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; color: var(--gray);">Family</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-content">
+        <div>
+          <div class="footer-logo">Dinner<span>Match</span></div>
+          <p style="color: var(--gray); max-width: 300px;">The family meal app that makes choosing dinner a joy, not a
+            chore.</p>
+        </div>
+        <div>
+          <h4>Navigate</h4>
+          <a href="#swipe">Swipe</a>
+          <a href="#meals">Meals</a>
+          <a href="#family">Family</a>
+        </div>
+        <div>
+          <h4>App</h4>
+          <a href="#">Add to Home Screen</a>
+          <a href="#">About</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2024 Dinner Match. Made with ❤️ for families.
+      </div>
+    </footer>
+
+  </div><!-- end main-content -->
+
+
+  <!-- MATCH OVERLAY -->
+  <div id="match-overlay" class="match-overlay" style="display:none;">
+    <div class="match-content">
+      <h1>IT'S A MATCH!</h1>
+      <p>The family has decided...</p>
+      <h2 id="match-meal-name"></h2>
+      <button class="btn btn-primary" onclick="viewMatchRecipe()" style="margin-right: 16px;">Let's Cook</button>
+      <button class="btn btn-outline" onclick="closeMatch()">Keep Swiping</button>
+    </div>
+  </div>
+
+  <!-- RECIPE MODAL -->
+  <div id="recipe-modal" class="modal" onclick="if(event.target === this) closeModal()">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="recipe-content"></div>
+    </div>
+  </div>
+
+  <!-- EDIT FAMILY MODAL -->
+  <div id="edit-family-modal" class="modal" onclick="if(event.target === this) closeEditFamily()">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeEditFamily()">✕</button>
+      <h2>Edit Family Member</h2>
+      <form id="edit-family-form" onsubmit="saveEditFamily(event)">
+        <input type="hidden" id="edit-family-id">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" id="edit-family-name" required>
+        </div>
+        <div class="form-group">
+          <label>Loves</label>
+          <input type="text" id="edit-family-likes">
+        </div>
+        <div class="form-group">
+          <label>Dislikes</label>
+          <input type="text" id="edit-family-dislikes">
+        </div>
+        <div class="form-group">
+          <label>Dietary</label>
+          <input type="text" id="edit-family-dietary">
+        </div>
+        <div style="display: flex; gap: 16px; margin-top: 32px;">
+          <button type="button" class="btn btn-outline" onclick="closeEditFamily()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- NAME PROMPT -->
+  <div id="name-prompt" class="modal" style="background: var(--black);">
+    <div class="modal-content" style="text-align: center; max-width: 400px;">
+      <h2 style="font-size: 2.5rem;">Welcome 👋</h2>
+      <p style="color: var(--gray-light); margin: 16px 0 24px;">What's your name?</p>
+      <input type="text" id="your-name-input" placeholder="Enter your name..." style="text-align: center;">
+      <button class="btn btn-primary" onclick="saveName()" style="width: 100%; margin-top: 24px;">Let's Go</button>
+    </div>
+  </div>
+
+  <script>
+    // Smart image matching by meal name keywords
+    function getMealImage(name) {
+      const lowerName = (name || '').toLowerCase();
+      if (lowerName.includes('biryani') || lowerName.includes('rice')) return '/images/biryani.png';
+      if (lowerName.includes('taco') || lowerName.includes('mexican')) return '/images/tacos.png';
+      if (lowerName.includes('fish') || lowerName.includes('salmon')) return '/images/fish.png';
+      if (lowerName.includes('salad') || lowerName.includes('healthy')) return '/images/salad.png';
+      if (lowerName.includes('soup')) return '/images/soup.png';
+      if (lowerName.includes('chicken') || lowerName.includes('roast')) return '/images/chicken.png';
+      if (lowerName.includes('burger')) return '/images/burger.png';
+      if (lowerName.includes('pizza')) return '/images/pizza.png';
+      if (lowerName.includes('pasta') || lowerName.includes('spaghetti')) return '/images/pasta.png';
+      if (lowerName.includes('curry')) return '/images/curry.png';
+      if (lowerName.includes('steak') || lowerName.includes('beef')) return '/images/steak.png';
+      return '/images/pasta.png'; // default
+    }
+
+    // Family avatar mapping
+    const familyAvatars = {
+      'dirge': '/images/avatar_dirge.png',
+      'dorge': '/images/avatar_dirge.png',
+      'ozzie': '/images/avatar_ozzie.png',
+      'mum': '/images/avatar_mum.png',
+      'mom': '/images/avatar_mum.png',
+      'dad': '/images/avatar_dad.png',
+      'default': null
+    };
+
+    function getFamilyAvatar(name) {
+      const lowerName = (name || '').trim().toLowerCase();
+      return familyAvatars[lowerName] || null;
+    }
+
+    let yourName = localStorage.getItem('yourName') || '';
+    let family = [], meals = [], swipeMeals = [], swipeIndex = 0, swipeVotes = {};
+    let currentSwipeMealId = null, matchMealId = null;
+
+    // Init
+    if (yourName) {
+      document.getElementById('name-prompt').style.display = 'none';
+    }
+
+    function saveName() {
+      const name = document.getElementById('your-name-input').value.trim();
+      if (!name) return alert('Please enter your name');
+      yourName = name;
+      localStorage.setItem('yourName', name);
+      document.getElementById('name-prompt').style.display = 'none';
+    }
+
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Nav scroll effect
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('main-nav');
+      if (window.scrollY > 100) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Fade-in animation
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // ============ API CALLS ============
+    async function loadFamily() {
+      const res = await fetch('/api/family');
+      family = await res.json();
+      renderFamily();
+      renderSwipeFamilyInline();
+      renderLeagueTable();
+      document.getElementById('stat-family').textContent = family.length;
+    }
+
+    // Toggle sidebar on mobile
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Render league table with scores
+    function renderLeagueTable() {
+      const el = document.getElementById('league-table');
+      if (!family.length) {
+        el.innerHTML = '<div style="text-align:center;color:var(--gray);padding:20px;">Add family members to start!</div>';
+        return;
+      }
+
+      // Calculate scores from swipeVotes
+      const scores = family.map(m => {
+        let votes = 0;
+        for (const mealId in swipeVotes) {
+          if (swipeVotes[mealId].has(m.id)) votes++;
+        }
+        return { ...m, votes };
+      }).sort((a, b) => b.votes - a.votes);
+
+      el.innerHTML = scores.map((m, i) => {
+        const avatar = getFamilyAvatar(m.name);
+        const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        return `
+          <div class="league-item">
+            <div class="league-rank ${rankClass}">${i + 1}</div>
+            ${avatar
+            ? `<img src="${avatar}?v=${new Date().getTime()}" class="league-avatar" alt="${m.name}">`
+            : `<div class="league-avatar-placeholder">👤</div>`}
+            <div class="league-info">
+              <div class="league-name">${m.name}</div>
+              <div class="league-stats">${m.votes} swipes this week</div>
+            </div>
+            <div class="league-score">
+              <div class="score">${m.votes * 10}</div>
+              <div class="label">points</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function loadMeals() {
+      const search = document.getElementById('meal-search')?.value || '';
+      const cat = document.getElementById('cat-filter')?.value || '';
+      const res = await fetch(`/api/meals?search=${encodeURIComponent(search)}&category=${encodeURIComponent(cat)}`);
+      meals = await res.json();
+      renderMeals();
+      initSwipe();
+      document.getElementById('stat-meals').textContent = meals.length;
+    }
+
+    function searchMeals() { loadMeals(); }
+
+    async function addFamily(e) {
+      e.preventDefault();
+      const f = e.target;
+      await fetch('/api/family', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: f.name.value, likes: f.likes.value, dislikes: f.dislikes.value, dietary: f.dietary.value })
+      });
+      f.reset();
+      loadFamily();
+    }
+
+    async function deleteFamily(id) {
+      if (!confirm('Remove this family member?')) return;
+      await fetch('/api/family/' + id, { method: 'DELETE' });
+      loadFamily();
+    }
+
+    function openEditFamily(id) {
+      const member = family.find(m => m.id === id);
+      if (!member) return;
+      document.getElementById('edit-family-id').value = id;
+      document.getElementById('edit-family-name').value = member.name;
+      document.getElementById('edit-family-likes').value = member.likes || '';
+      document.getElementById('edit-family-dislikes').value = member.dislikes || '';
+      document.getElementById('edit-family-dietary').value = member.dietary || '';
+      document.getElementById('edit-family-modal').classList.add('show');
+    }
+
+    function closeEditFamily() {
+      document.getElementById('edit-family-modal').classList.remove('show');
+    }
+
+    async function saveEditFamily(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-family-id').value;
+      await fetch('/api/family/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('edit-family-name').value,
+          likes: document.getElementById('edit-family-likes').value,
+          dislikes: document.getElementById('edit-family-dislikes').value,
+          dietary: document.getElementById('edit-family-dietary').value
+        })
+      });
+      closeEditFamily();
+      loadFamily();
+    }
+
+    async function addMeal(e) {
+      e.preventDefault();
+      const f = e.target;
+      await fetch('/api/meals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: f.name.value, ingredients: f.ingredients.value, instructions: f.instructions.value,
+          category: f.category.value, prep_time: f.prep_time.value, cook_time: f.cook_time.value,
+          servings: f.servings.value, added_by: yourName
+        })
+      });
+      f.reset();
+      loadMeals();
+      alert('Meal added!');
+    }
+
+    async function deleteMeal(id) {
+      try {
+        const res = await fetch('/api/meals/' + id, { method: 'DELETE' });
+        if (res.ok) { closeModal(); loadMeals(); }
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function viewRecipe(id) {
+      const res = await fetch('/api/meals/' + id);
+      const meal = await res.json();
+      const ingredients = meal.ingredients ? meal.ingredients.split('\n').filter(i => i.trim()) : [];
+      const instructions = meal.instructions ? meal.instructions.split('\n').filter(i => i.trim()) : [];
+      const img = getMealImage(meal.name);
+
+      document.getElementById('recipe-content').innerHTML = `
+        <img src="${img}" style="width:100%;height:300px;object-fit:cover;margin-bottom:24px;">
+        <h2 style="font-size: 2rem; margin-bottom: 16px;">${meal.name}</h2>
+        <div style="display:flex;gap:16px;color:var(--gray-light);margin-bottom:24px;">
+          ${meal.category ? `<span>${meal.category}</span>` : ''}
+          ${meal.prep_time ? `<span>⏱️ ${meal.prep_time}</span>` : ''}
+          ${meal.servings ? `<span>👥 ${meal.servings}</span>` : ''}
+        </div>
+        ${ingredients.length ? `<h3 style="margin:24px 0 12px;">Ingredients</h3><div style="background:rgba(255,255,255,0.03);padding:20px;">${ingredients.map(i => `<div style="padding:4px 0;">• ${i}</div>`).join('')}</div>` : ''}
+        ${instructions.length ? `<h3 style="margin:24px 0 12px;">Instructions</h3><div style="background:rgba(255,255,255,0.03);padding:20px;">${instructions.map((s, i) => `<div style="padding:8px 0;"><strong>${i + 1}.</strong> ${s}</div>`).join('')}</div>` : ''}
+        <div style="display:flex;gap:16px;margin-top:32px;">
+          <button class="btn btn-outline" onclick="closeModal()">Close</button>
+          <button class="btn btn-primary" style="background:#dc2626;" onclick="deleteMeal(${meal.id})">Delete</button>
+        </div>
+      `;
+      document.getElementById('recipe-modal').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('recipe-modal').classList.remove('show');
+    }
+
+    // ============ SWIPE ============
+    function renderSwipeFamilyInline() {
+      const el = document.getElementById('swipe-family-inline');
+      if (!family.length) { el.innerHTML = ''; return; }
+      el.innerHTML = '<br>' + family.map(m => `
+        <label style="display:inline-flex;align-items:center;gap:6px;margin:8px 12px;cursor:pointer;">
+          <input type="checkbox" class="swipe-member" value="${m.id}" checked style="width:18px;height:18px;">
+          ${m.name}
+        </label>
+      `).join('');
+    }
+
+    function initSwipe() {
+      swipeMeals = [...meals];
+      swipeIndex = 0;
+      swipeVotes = {};
+      renderSwipeStack();
+    }
+
+    function renderSwipeStack() {
+      const stack = document.getElementById('swipe-stack');
+      const empty = document.getElementById('swipe-empty');
+      const btns = document.getElementById('swipe-btns');
+
+      if (swipeIndex >= swipeMeals.length) {
+        stack.innerHTML = '';
+        empty.style.display = 'block';
+        btns.style.display = 'none';
+        return;
+      }
+
+      empty.style.display = 'none';
+      btns.style.display = 'flex';
+
+      const current = swipeMeals[swipeIndex];
+      const next = swipeMeals[swipeIndex + 1];
+      currentSwipeMealId = current.id;
+      const img = getMealImage(current.name);
+      const nextImg = next ? getMealImage(next.name) : '';
+
+      stack.innerHTML = `
+        ${next ? `<div class="swipe-card" style="transform:scale(0.95);opacity:0.5;">
+          <img src="${nextImg}" alt="${next.name}">
+          <div class="swipe-card-content">
+            <span class="tag">${next.category || 'Meal'}</span>
+            <h3>${next.name}</h3>
+          </div>
+        </div>` : ''}
+        <div class="swipe-card" id="current-card">
+          <div class="swipe-indicator like">LIKE</div>
+          <div class="swipe-indicator nope">NOPE</div>
+          <img src="${img}" alt="${current.name}">
+          <div class="swipe-card-content">
+            <div class="tags"><span class="tag">${current.category || 'Meal'}</span></div>
+            <h3>${current.name}</h3>
+            <div class="time">${current.prep_time || ''} ${current.cook_time ? '+ ' + current.cook_time : ''}</div>
+          </div>
+        </div>
+      `;
+
+      initCardDrag();
+    }
+
+    function initCardDrag() {
+      const card = document.getElementById('current-card');
+      if (!card) return;
+
+      let startX = 0, currentX = 0, isDragging = false;
+
+      const start = (x) => { startX = x; isDragging = true; card.style.transition = 'none'; };
+      const move = (x) => {
+        if (!isDragging) return;
+        currentX = x - startX;
+        card.style.transform = `translateX(${currentX}px) rotate(${currentX / 20}deg)`;
+        const likeInd = card.querySelector('.swipe-indicator.like');
+        const nopeInd = card.querySelector('.swipe-indicator.nope');
+        if (likeInd) likeInd.style.opacity = Math.min(currentX / 100, 1);
+        if (nopeInd) nopeInd.style.opacity = Math.min(-currentX / 100, 1);
+      };
+      const end = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        card.style.transition = 'transform 0.3s ease';
+        if (currentX > 120) { animateSwipe(1); }
+        else if (currentX < -120) { animateSwipe(-1); }
+        else {
+          card.style.transform = 'translateX(0) rotate(0)';
+          card.querySelector('.swipe-indicator.like').style.opacity = 0;
+          card.querySelector('.swipe-indicator.nope').style.opacity = 0;
+        }
+      };
+
+      card.addEventListener('mousedown', e => start(e.clientX));
+      card.addEventListener('touchstart', e => start(e.touches[0].clientX));
+      document.addEventListener('mousemove', e => move(e.clientX));
+      document.addEventListener('touchmove', e => move(e.touches[0].clientX));
+      document.addEventListener('mouseup', end);
+      document.addEventListener('touchend', end);
+    }
+
+    function animateSwipe(direction) {
+      const card = document.getElementById('current-card');
+      card.style.transition = 'transform 0.4s ease, opacity 0.4s ease';
+      card.style.transform = `translateX(${direction * 600}px) rotate(${direction * 30}deg)`;
+      card.style.opacity = '0';
+
+      setTimeout(() => {
+        if (direction === 1) recordVote(currentSwipeMealId, 1);
+        swipeIndex++;
+        renderSwipeStack();
+      }, 300);
+    }
+
+    function swipeLeft() { animateSwipe(-1); }
+    function swipeRight() { animateSwipe(1); }
+    function resetSwipe() { swipeIndex = 0; swipeVotes = {}; renderSwipeStack(); }
+
+    async function recordVote(mealId, vote) {
+      const checkedMembers = Array.from(document.querySelectorAll('.swipe-member:checked')).map(c => parseInt(c.value));
+      if (!checkedMembers.length) return;
+
+      if (!swipeVotes[mealId]) swipeVotes[mealId] = new Set();
+      checkedMembers.forEach(id => swipeVotes[mealId].add(id));
+      renderLeagueTable(); // Update scores in sidebar
+
+      if (swipeVotes[mealId].size >= 2) {
+        matchMealId = mealId;
+        const meal = meals.find(m => m.id === mealId);
+        document.getElementById('match-meal-name').textContent = meal.name;
+        document.getElementById('match-overlay').style.display = 'flex';
+        createConfetti();
+      }
+
+      for (const memberId of checkedMembers) {
+        await fetch(`/api/meals/${mealId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ member_id: memberId, vote })
+        });
+      }
+    }
+
+    function closeMatch() { document.getElementById('match-overlay').style.display = 'none'; }
+    function viewMatchRecipe() { closeMatch(); viewRecipe(matchMealId); }
+
+    // ============ RENDER ============
+    function renderFamily() {
+      const el = document.getElementById('family-list');
+      if (!family.length) { el.innerHTML = '<div style="color:var(--gray);text-align:center;padding:40px;">No family members yet</div>'; return; }
+      el.innerHTML = family.map(m => {
+        const avatar = getFamilyAvatar(m.name);
+        console.log('Rendering family member:', m.name, 'Avatar path:', avatar);
+        return `
+          <div class="family-card" style="text-align: center;">
+            ${avatar ? `<img src="${avatar}?v=${new Date().getTime()}" alt="${m.name}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;margin-bottom:16px;border:3px solid var(--red);">` : `<div style="width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.1);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:3rem;">👤</div>`}
+            <h4 style="margin-bottom:12px;">${m.name}</h4>
+            ${m.likes ? `<p>❤️ ${m.likes}</p>` : ''}
+            ${m.dislikes ? `<p>👎 ${m.dislikes}</p>` : ''}
+            ${m.dietary ? `<p>⚠️ ${m.dietary}</p>` : ''}
+            <div class="family-card-actions" style="justify-content:center;margin-top:20px;">
+              <button onclick="openEditFamily(${m.id})">Edit</button>
+              <button onclick="deleteFamily(${m.id})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderMeals() {
+      const el = document.getElementById('meals-grid');
+      if (!meals.length) { el.innerHTML = '<div style="color:var(--gray);text-align:center;padding:40px;">No meals found</div>'; return; }
+      el.innerHTML = meals.map(m => {
+        const img = getMealImage(m.name);
+        return `
+          <div class="meal-item" onclick="viewRecipe(${m.id})">
+            <img src="${img}" alt="${m.name}">
+            <div class="meal-item-overlay">
+              <h3>${m.name}</h3>
+              <div class="meta">
+                <span>${m.category || 'Meal'}</span>
+                ${m.prep_time ? `<span>⏱️ ${m.prep_time}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Confetti
+    function createConfetti() {
+      const colors = ['#ef4444', '#ffffff', '#22c55e', '#f59e0b'];
+      for (let i = 0; i < 60; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 4000);
+      }
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
+    // Init
+    loadFamily();
+    loadMeals();
+  </script>
+</body>
+
+</html>
