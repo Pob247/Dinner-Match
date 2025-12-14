@@ -35,8 +35,8 @@
   <!-- FAMILY SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h2>🏆 Family League</h2>
-      <p>Swipe scores this week</p>
+      <h2>🍽️ Our Picks</h2>
+      <p>What we're loving</p>
     </div>
     <div class="league-table" id="league-table">
       <!-- Rendered by JS -->
@@ -71,12 +71,36 @@
     <!-- SWIPE SECTION -->
     <section id="swipe" class="swipe-section">
       <h2 class="section-title fade-in">Swipe To <span>Decide</span></h2>
-      <p class="fade-in" style="color: var(--gray-light); text-align: center; margin-bottom: 40px; font-size: 1.1rem;">
-        Who's eating tonight?
+
+      <!-- Attendance options -->
+      <div class="attendance-section fade-in">
+        <button class="attendance-btn" id="guest-btn" onclick="toggleGuest()">
+          🍕 Having a friend over
+        </button>
+        <button class="attendance-btn" id="skip-btn" onclick="toggleSkip()">
+          🚫 Skip tonight
+        </button>
+      </div>
+
+      <p class="fade-in" style="color: var(--gray-light); text-align: center; margin-bottom: 20px; font-size: 1rem;">
+        Who's eating?
         <span id="swipe-family-inline"></span>
       </p>
 
+      <!-- Progress indicator -->
+      <div class="swipe-progress fade-in" id="swipe-progress">
+        <div class="swipe-progress-bar">
+          <div class="swipe-progress-fill" id="swipe-progress-fill" style="width: 0%"></div>
+        </div>
+        <span class="swipe-progress-text" id="swipe-progress-text">0 of 0</span>
+      </div>
+
       <div class="swipe-container">
+        <!-- Swipe hints -->
+        <div class="swipe-hints">
+          <span class="swipe-hint left">← NOPE</span>
+          <span class="swipe-hint right">LIKE →</span>
+        </div>
         <div id="swipe-stack"></div>
       </div>
 
@@ -270,21 +294,29 @@
           <label>Dietary</label>
           <input type="text" id="edit-family-dietary">
         </div>
-        <div style="display: flex; gap: 16px; margin-top: 32px;">
+        <div style="display: flex; gap: 16px; margin-top: 32px; flex-wrap: wrap;">
           <button type="button" class="btn btn-outline" onclick="closeEditFamily()">Cancel</button>
           <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn" style="background:#dc2626;color:white;margin-left:auto;"
+            onclick="deleteFamilyFromModal()">Remove</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- NAME PROMPT -->
+  <!-- FAMILY PICKER -->
   <div id="name-prompt" class="modal" style="background: var(--black);">
-    <div class="modal-content" style="text-align: center; max-width: 400px;">
-      <h2 style="font-size: 2.5rem;">Welcome 👋</h2>
-      <p style="color: var(--gray-light); margin: 16px 0 24px;">What's your name?</p>
-      <input type="text" id="your-name-input" placeholder="Enter your name..." style="text-align: center;">
-      <button class="btn btn-primary" onclick="saveName()" style="width: 100%; margin-top: 24px;">Let's Go</button>
+    <div class="modal-content" style="text-align: center; max-width: 500px;">
+      <h2 style="font-size: 2.5rem; margin-bottom: 8px;">Who's Hungry? 🍽️</h2>
+      <p style="color: var(--gray-light); margin-bottom: 32px;">Tap your face to start</p>
+
+      <div id="family-picker" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        <!-- Family avatars loaded by JS -->
+      </div>
+
+      <p style="color: var(--gray); font-size: 0.8rem; margin-top: 24px;">
+        Not listed? <a href="#" onclick="showAddMember()" style="color: var(--red);">Add yourself</a>
+      </p>
     </div>
   </div>
 
@@ -292,29 +324,121 @@
     // Smart image matching by meal name keywords
     function getMealImage(name) {
       const lowerName = (name || '').toLowerCase();
-      if (lowerName.includes('biryani') || lowerName.includes('rice')) return '/images/biryani.png';
-      if (lowerName.includes('taco') || lowerName.includes('mexican')) return '/images/tacos.png';
-      if (lowerName.includes('fish') || lowerName.includes('salmon')) return '/images/fish.png';
-      if (lowerName.includes('salad') || lowerName.includes('healthy')) return '/images/salad.png';
-      if (lowerName.includes('soup')) return '/images/soup.png';
-      if (lowerName.includes('chicken') || lowerName.includes('roast')) return '/images/chicken.png';
-      if (lowerName.includes('burger')) return '/images/burger.png';
-      if (lowerName.includes('pizza')) return '/images/pizza.png';
-      if (lowerName.includes('pasta') || lowerName.includes('spaghetti')) return '/images/pasta.png';
-      if (lowerName.includes('curry')) return '/images/curry.png';
-      if (lowerName.includes('steak') || lowerName.includes('beef')) return '/images/steak.png';
-      return '/images/pasta.png'; // default
+
+      // Pizza - check first for specificity
+      if (lowerName.includes('pizza')) return '/images/cartoon_pizza.png';
+
+      // Tacos & Mexican
+      if (lowerName.includes('taco') || lowerName.includes('mexican') ||
+        lowerName.includes('fajita') || lowerName.includes('burrito') ||
+        lowerName.includes('enchilada') || lowerName.includes('quesadilla') ||
+        lowerName.includes('nacho') || lowerName.includes('chilli con carne')) return '/images/cartoon_tacos.png';
+
+      // Fish & Seafood
+      if (lowerName.includes('fish') || lowerName.includes('salmon') ||
+        lowerName.includes('cod') || lowerName.includes('haddock') ||
+        lowerName.includes('prawn') || lowerName.includes('shrimp') ||
+        lowerName.includes('seafood') || lowerName.includes('tuna')) return '/images/cartoon_fish.png';
+
+      // Salads & Healthy
+      if (lowerName.includes('salad') || lowerName.includes('healthy') ||
+        lowerName.includes('buddha bowl') || lowerName.includes('poke')) return '/images/cartoon_salad.png';
+
+      // Soups, Stews & Casseroles
+      if (lowerName.includes('soup') || lowerName.includes('stew') ||
+        lowerName.includes('casserole') || lowerName.includes('hotpot') ||
+        lowerName.includes('chowder')) return '/images/cartoon_soup.png';
+
+      // Curries - all types
+      if (lowerName.includes('curry') || lowerName.includes('korma') ||
+        lowerName.includes('tikka') || lowerName.includes('madras') ||
+        lowerName.includes('vindaloo') || lowerName.includes('balti') ||
+        lowerName.includes('bhuna') || lowerName.includes('jalfrezi') ||
+        lowerName.includes('masala') || lowerName.includes('rogan') ||
+        lowerName.includes('keema') || lowerName.includes('satay')) return '/images/cartoon_curry.png';
+
+      // Rice dishes
+      if (lowerName.includes('biryani') || lowerName.includes('fried rice') ||
+        lowerName.includes('risotto') || lowerName.includes('pilaf') ||
+        lowerName.includes('paella')) return '/images/cartoon_biryani.png';
+
+      // Noodles & Asian
+      if (lowerName.includes('noodle') || lowerName.includes('stir fry') ||
+        lowerName.includes('chow mein') || lowerName.includes('lo mein') ||
+        lowerName.includes('pad thai') || lowerName.includes('ramen') ||
+        lowerName.includes('pho')) return '/images/cartoon_stir_fry.png';
+
+      // Burgers & Sandwiches
+      if (lowerName.includes('burger') || lowerName.includes('sandwich') ||
+        lowerName.includes('panini') || lowerName.includes('blt') ||
+        lowerName.includes('wrap') || lowerName.includes('club')) return '/images/cartoon_burger.png';
+
+      // Sausages & hot dogs
+      if (lowerName.includes('sausage') || lowerName.includes('banger') ||
+        lowerName.includes('toad in the hole') || lowerName.includes('hot dog') ||
+        lowerName.includes('frankfurter')) return '/images/cartoon_burger.png';
+
+      // Pasta & Italian (except pizza)
+      if (lowerName.includes('pasta') || lowerName.includes('spaghetti') ||
+        lowerName.includes('lasagne') || lowerName.includes('lasagna') ||
+        lowerName.includes('carbonara') || lowerName.includes('bolognese') ||
+        lowerName.includes('penne') || lowerName.includes('ravioli') ||
+        lowerName.includes('gnocchi') || lowerName.includes('tagliatelle') ||
+        lowerName.includes('fettuccine') || lowerName.includes('macaroni')) return '/images/cartoon_pasta.png';
+
+      // Beef, Steak & Roasts
+      if (lowerName.includes('steak') || lowerName.includes('beef') ||
+        lowerName.includes('wellington') || lowerName.includes('rib') ||
+        lowerName.includes('brisket') || lowerName.includes('sirloin')) return '/images/cartoon_roast.png';
+
+      // British pies & classic dishes
+      if (lowerName.includes('pie') || lowerName.includes('shepherd') ||
+        lowerName.includes('cottage') || lowerName.includes('pasty') ||
+        lowerName.includes('pastie')) return '/images/cartoon_pie.png';
+
+      // Gammon & Ham
+      if (lowerName.includes('gammon') || lowerName.includes('ham') && !lowerName.includes('hamburger') ||
+        lowerName.includes('pork') || lowerName.includes('bacon')) return '/images/cartoon_roast.png';
+
+      // Jacket potatoes
+      if (lowerName.includes('jacket') || lowerName.includes('baked potato') ||
+        lowerName.includes('beans on toast') || lowerName.includes('cheese on toast')) return '/images/cartoon_pie.png';
+
+      // Chicken & poultry
+      if (lowerName.includes('chicken') || lowerName.includes('roast') ||
+        lowerName.includes('turkey') || lowerName.includes('duck') ||
+        lowerName.includes('poultry') || lowerName.includes('wing') ||
+        lowerName.includes('drumstick') || lowerName.includes('thigh') ||
+        lowerName.includes('sweet and sour') || lowerName.includes('kung pao') ||
+        lowerName.includes('general tso') || lowerName.includes('sesame')) return '/images/cartoon_chicken.png';
+
+      return '/images/cartoon_pasta.png'; // default
     }
 
     // Family avatar mapping
     const familyAvatars = {
-      'dirge': '/images/avatar_dirge.png',
-      'dorge': '/images/avatar_dirge.png',
-      'ozzie': '/images/avatar_ozzie.png',
-      'mum': '/images/avatar_mum.png',
-      'mom': '/images/avatar_mum.png',
-      'dad': '/images/avatar_dad.png',
+      'dorge': '/images/avatar_dorge.jpg',
+      'ozzie': '/images/avatar_ozzie.jpg',
+      'mum': '/images/avatar_mum.jpg',
+      'mom': '/images/avatar_mum.jpg',
+      'dad': '/images/avatar_dad.jpg',
       'default': null
+    };
+
+    // Nickname mappings (display name -> real name)
+    const familyNicknames = {
+      'Mum': 'Lou',
+      'Dad': 'Phil',
+      'Ozzie': 'Oscar',
+      'Dorge': 'George'
+    };
+
+    // Greetings for each family member
+    const familyGreetings = {
+      'Mum': "Hey Lou! 💕 Ready to pick tonight's dinner?",
+      'Dad': "Alright Phil! 🍕 Let's find something tasty!",
+      'Ozzie': "What's up Oscar! 🎮 Time to swipe on some food!",
+      'Dorge': "Hey George! 🌟 Let's see what looks good!"
     };
 
     function getFamilyAvatar(name) {
@@ -322,21 +446,129 @@
       return familyAvatars[lowerName] || null;
     }
 
+    // Render family picker on load screen
+    function renderFamilyPicker() {
+      const picker = document.getElementById('family-picker');
+      if (!picker) return;
+
+      picker.innerHTML = family.map(m => {
+        const avatar = getFamilyAvatar(m.name);
+        const nickname = familyNicknames[m.name] || '';
+        return `
+          <div class="picker-card" onclick="selectFamily(${m.id}, '${m.name}')" 
+               style="background:rgba(255,255,255,0.05);border-radius:16px;padding:24px;cursor:pointer;
+                      transition:all 0.3s ease;border:2px solid transparent;">
+            ${avatar
+            ? `<img src="${avatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:12px;border:3px solid var(--red);">`
+            : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.1);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;">👤</div>`}
+            <div style="font-size:1.2rem;font-weight:700;">${m.name}</div>
+            ${nickname ? `<div style="color:var(--gray);font-size:0.9rem;">${nickname}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Select family member and show greeting
+    async function selectFamily(id, name) {
+      currentMemberId = id;
+      yourName = name;
+      localStorage.setItem('memberId', id);
+      localStorage.setItem('yourName', name);
+
+      // Show greeting
+      const greeting = familyGreetings[name] || `Hey ${name}! 👋 Let's find dinner!`;
+      const picker = document.getElementById('family-picker');
+      picker.innerHTML = `
+        <div style="grid-column: span 2; padding: 40px 20px;">
+          <div style="font-size: 2rem; margin-bottom: 16px;">👋</div>
+          <div style="font-size: 1.4rem; font-weight: 600; color: white;">${greeting}</div>
+        </div>
+      `;
+
+      // Wait then hide prompt
+      setTimeout(() => {
+        document.getElementById('name-prompt').style.display = 'none';
+        renderSwipeFamilyInline();
+        renderLeagueTable();
+      }, 1500);
+    }
+
+    function showAddMember() {
+      document.getElementById('name-prompt').style.display = 'none';
+      scrollToSection('family');
+    }
+
     let yourName = localStorage.getItem('yourName') || '';
+    let currentMemberId = parseInt(localStorage.getItem('memberId')) || null;
     let family = [], meals = [], swipeMeals = [], swipeIndex = 0, swipeVotes = {};
     let currentSwipeMealId = null, matchMealId = null;
+    let hasGuest = false, skipTonight = false;
 
-    // Init
-    if (yourName) {
+    // Attendance toggles
+    function toggleGuest() {
+      hasGuest = !hasGuest;
+      document.getElementById('guest-btn').classList.toggle('active', hasGuest);
+    }
+
+    function toggleSkip() {
+      skipTonight = !skipTonight;
+      document.getElementById('skip-btn').classList.toggle('active', skipTonight);
+    }
+
+    // Delete family from edit modal
+    async function deleteFamilyFromModal() {
+      const id = document.getElementById('edit-family-id').value;
+      if (confirm('Remove this family member?')) {
+        await fetch('/api/family/' + id, { method: 'DELETE' });
+        closeEditFamily();
+        loadFamily();
+      }
+    }
+
+    // Init - show picker as home screen if not logged in
+    if (!yourName || !currentMemberId) {
+      // Show picker modal immediately
+      document.getElementById('name-prompt').style.display = 'flex';
+    } else {
       document.getElementById('name-prompt').style.display = 'none';
     }
 
-    function saveName() {
+    async function saveName() {
       const name = document.getElementById('your-name-input').value.trim();
       if (!name) return alert('Please enter your name');
+
+      // Load family first if needed
+      if (!family.length) {
+        const res = await fetch('/api/family');
+        family = await res.json();
+      }
+
+      // Try to match to existing family member
+      const match = family.find(m => m.name.toLowerCase() === name.toLowerCase());
+
+      if (match) {
+        currentMemberId = match.id;
+      } else {
+        // Create new family member
+        const res = await fetch('/api/family', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, likes: '', dislikes: '', dietary: '' })
+        });
+        const newMember = await res.json();
+        currentMemberId = newMember.id;
+        family.push(newMember);
+      }
+
       yourName = name;
       localStorage.setItem('yourName', name);
+      localStorage.setItem('memberId', currentMemberId);
       document.getElementById('name-prompt').style.display = 'none';
+
+      // Refresh UI
+      renderFamily();
+      renderSwipeFamilyInline();
+      renderLeagueTable();
     }
 
     function scrollToSection(id) {
@@ -371,7 +603,13 @@
       renderFamily();
       renderSwipeFamilyInline();
       renderLeagueTable();
+      renderFamilyPicker(); // For login screen
       document.getElementById('stat-family').textContent = family.length;
+
+      // Show picker if not logged in
+      if (!currentMemberId && family.length > 0) {
+        document.getElementById('name-prompt').style.display = 'flex';
+      }
     }
 
     // Toggle sidebar on mobile
@@ -379,7 +617,7 @@
       document.getElementById('sidebar').classList.toggle('open');
     }
 
-    // Render league table with scores
+    // Render picks sidebar (shows what each family member likes)
     function renderLeagueTable() {
       const el = document.getElementById('league-table');
       if (!family.length) {
@@ -387,31 +625,31 @@
         return;
       }
 
-      // Calculate scores from swipeVotes
-      const scores = family.map(m => {
-        let votes = 0;
+      // Get liked meals for each family member
+      const memberPicks = family.map(m => {
+        const likedMealIds = [];
         for (const mealId in swipeVotes) {
-          if (swipeVotes[mealId].has(m.id)) votes++;
+          if (swipeVotes[mealId].has(m.id)) likedMealIds.push(parseInt(mealId));
         }
-        return { ...m, votes };
-      }).sort((a, b) => b.votes - a.votes);
+        const likedMeals = likedMealIds.map(id => meals.find(meal => meal.id === id)).filter(Boolean).slice(0, 3);
+        return { ...m, likedMeals };
+      });
 
-      el.innerHTML = scores.map((m, i) => {
+      el.innerHTML = memberPicks.map(m => {
         const avatar = getFamilyAvatar(m.name);
-        const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        const mealNames = m.likedMeals.length > 0
+          ? m.likedMeals.map(meal => `<span class="pick-tag">${meal.name.split(' ').slice(0, 2).join(' ')}</span>`).join('')
+          : '<span style="color:var(--gray);font-size:0.8rem;">No picks yet</span>';
         return `
-          <div class="league-item">
-            <div class="league-rank ${rankClass}">${i + 1}</div>
-            ${avatar
-            ? `<img src="${avatar}?v=${new Date().getTime()}" class="league-avatar" alt="${m.name}">`
-            : `<div class="league-avatar-placeholder">👤</div>`}
-            <div class="league-info">
-              <div class="league-name">${m.name}</div>
-              <div class="league-stats">${m.votes} swipes this week</div>
+          <div class="league-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;width:100%;">
+              ${avatar
+            ? `<img src="${avatar}?v=${new Date().getTime()}" class="league-avatar" alt="${m.name}" style="width:36px;height:36px;">`
+            : `<div class="league-avatar-placeholder" style="width:36px;height:36px;font-size:1rem;">👤</div>`}
+              <div class="league-name" style="font-size:0.95rem;">${m.name}</div>
             </div>
-            <div class="league-score">
-              <div class="score">${m.votes * 10}</div>
-              <div class="label">points</div>
+            <div class="picks-list" style="display:flex;flex-wrap:wrap;gap:6px;padding-left:46px;">
+              ${mealNames}
             </div>
           </div>
         `;
@@ -536,13 +774,29 @@
     // ============ SWIPE ============
     function renderSwipeFamilyInline() {
       const el = document.getElementById('swipe-family-inline');
-      if (!family.length) { el.innerHTML = ''; return; }
-      el.innerHTML = '<br>' + family.map(m => `
-        <label style="display:inline-flex;align-items:center;gap:6px;margin:8px 12px;cursor:pointer;">
-          <input type="checkbox" class="swipe-member" value="${m.id}" checked style="width:18px;height:18px;">
-          ${m.name}
-        </label>
-      `).join('');
+      if (!yourName || !currentMemberId) {
+        el.innerHTML = '<br><em>Set your name to vote</em>';
+        return;
+      }
+      const avatar = getFamilyAvatar(yourName);
+      el.innerHTML = `
+        <div style="display:inline-flex;align-items:center;gap:10px;margin-top:8px;">
+          ${avatar ? `<img src="${avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;">` : ''}
+          <strong>${yourName}</strong>
+          <button onclick="switchUser()" style="background:none;border:1px solid var(--gray);color:var(--gray-light);padding:4px 12px;border-radius:16px;font-size:0.8rem;cursor:pointer;">Switch</button>
+        </div>
+      `;
+    }
+
+    // User switcher modal
+    function switchUser() {
+      // Clear stored user and show picker again
+      localStorage.removeItem('yourName');
+      localStorage.removeItem('memberId');
+      yourName = '';
+      currentMemberId = null;
+      renderFamilyPicker();
+      document.getElementById('name-prompt').style.display = 'flex';
     }
 
     function initSwipe() {
@@ -556,11 +810,21 @@
       const stack = document.getElementById('swipe-stack');
       const empty = document.getElementById('swipe-empty');
       const btns = document.getElementById('swipe-btns');
+      const progressFill = document.getElementById('swipe-progress-fill');
+      const progressText = document.getElementById('swipe-progress-text');
+
+      // Update progress bar
+      const total = swipeMeals.length;
+      const progressNum = swipeIndex + 1;
+      const percentage = total > 0 ? (swipeIndex / total) * 100 : 0;
+      if (progressFill) progressFill.style.width = `${percentage}%`;
+      if (progressText) progressText.textContent = total > 0 ? `${Math.min(progressNum, total)} of ${total}` : '0 of 0';
 
       if (swipeIndex >= swipeMeals.length) {
         stack.innerHTML = '';
         empty.style.display = 'block';
         btns.style.display = 'none';
+        if (progressFill) progressFill.style.width = '100%';
         return;
       }
 
@@ -651,13 +915,13 @@
     function resetSwipe() { swipeIndex = 0; swipeVotes = {}; renderSwipeStack(); }
 
     async function recordVote(mealId, vote) {
-      const checkedMembers = Array.from(document.querySelectorAll('.swipe-member:checked')).map(c => parseInt(c.value));
-      if (!checkedMembers.length) return;
+      if (!currentMemberId) return; // Must be logged in to vote
 
       if (!swipeVotes[mealId]) swipeVotes[mealId] = new Set();
-      checkedMembers.forEach(id => swipeVotes[mealId].add(id));
-      renderLeagueTable(); // Update scores in sidebar
+      swipeVotes[mealId].add(currentMemberId);
+      renderLeagueTable(); // Update picks in sidebar
 
+      // Check if multiple family members have liked this meal (match!)
       if (swipeVotes[mealId].size >= 2) {
         matchMealId = mealId;
         const meal = meals.find(m => m.id === mealId);
@@ -666,13 +930,12 @@
         createConfetti();
       }
 
-      for (const memberId of checkedMembers) {
-        await fetch(`/api/meals/${mealId}/vote`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ member_id: memberId, vote })
-        });
-      }
+      // Save vote to server
+      await fetch(`/api/meals/${mealId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ member_id: currentMemberId, vote })
+      });
     }
 
     function closeMatch() { document.getElementById('match-overlay').style.display = 'none'; }
@@ -694,7 +957,6 @@
             ${m.dietary ? `<p>⚠️ ${m.dietary}</p>` : ''}
             <div class="family-card-actions" style="justify-content:center;margin-top:20px;">
               <button onclick="openEditFamily(${m.id})">Edit</button>
-              <button onclick="deleteFamily(${m.id})">Delete</button>
             </div>
           </div>
         `;
