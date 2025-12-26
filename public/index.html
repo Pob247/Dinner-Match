@@ -321,12 +321,25 @@
   </div>
 
   <script>
-    // Smart image matching by meal name keywords
-    function getMealImage(name) {
+      // Smart image matching by meal name keywords
+      function getMealImage(name) {
       const lowerName = (name || '').toLowerCase();
 
       // Pizza - check first for specificity
       if (lowerName.includes('pizza')) return '/images/cartoon_pizza.png';
+
+      // Burgers only
+      if (lowerName.includes('burger')) return '/images/cartoon_burger.png';
+
+      // Wraps & Sandwiches - use tacos image (closer to wrap shape)
+      if (lowerName.includes('wrap') || lowerName.includes('sandwich') ||
+        lowerName.includes('panini') || lowerName.includes('blt') ||
+        lowerName.includes('club')) return '/images/cartoon_tacos.png';
+
+      // Sausages & hot dogs - use roast image
+      if (lowerName.includes('sausage') || lowerName.includes('banger') ||
+        lowerName.includes('toad in the hole') || lowerName.includes('hot dog') ||
+        lowerName.includes('frankfurter')) return '/images/cartoon_roast.png';
 
       // Tacos & Mexican
       if (lowerName.includes('taco') || lowerName.includes('mexican') ||
@@ -367,16 +380,6 @@
         lowerName.includes('chow mein') || lowerName.includes('lo mein') ||
         lowerName.includes('pad thai') || lowerName.includes('ramen') ||
         lowerName.includes('pho')) return '/images/cartoon_stir_fry.png';
-
-      // Burgers & Sandwiches
-      if (lowerName.includes('burger') || lowerName.includes('sandwich') ||
-        lowerName.includes('panini') || lowerName.includes('blt') ||
-        lowerName.includes('wrap') || lowerName.includes('club')) return '/images/cartoon_burger.png';
-
-      // Sausages & hot dogs
-      if (lowerName.includes('sausage') || lowerName.includes('banger') ||
-        lowerName.includes('toad in the hole') || lowerName.includes('hot dog') ||
-        lowerName.includes('frankfurter')) return '/images/cartoon_burger.png';
 
       // Pasta & Italian (except pizza)
       if (lowerName.includes('pasta') || lowerName.includes('spaghetti') ||
