@@ -879,9 +879,25 @@ app.post('/api/meals/:id/preference', (req, res) => {
 
 // Remove preference
 app.delete('/api/meals/:id/preference/:member_id', (req, res) => {
-  db.prepare('DELETE FROM member_meal_preferences WHERE meal_id = ? AND member_id = ?')
-    .run(req.params.id, req.params.member_id);
-  res.json({ success: true });
+  try {
+    const mealId = parseInt(req.params.id, 10);
+    const memberId = parseInt(req.params.member_id, 10);
+
+    if (isNaN(mealId) || mealId < 1) {
+      return res.status(400).json({ error: 'Invalid meal ID' });
+    }
+    if (isNaN(memberId) || memberId < 1) {
+      return res.status(400).json({ error: 'Invalid member ID' });
+    }
+
+    db.prepare('DELETE FROM member_meal_preferences WHERE meal_id = ? AND member_id = ?')
+      .run(mealId, memberId);
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Delete preference error:', err.message);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
 // Get all preferences for a member
